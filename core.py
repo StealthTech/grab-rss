@@ -13,8 +13,10 @@ def menu_option_fetch():
         entry.parse()
         if len(entry.rss):
             print(f'{counter}. {entry.url} :: {entry.title} :: Found {len(entry.rss)} RSS channel(s)')
+            subcounter = 1
             for rss in entry.rss:
-                print(f'∟ {rss}')
+                print(f'   ∟ {subcounter}. {rss}')
+                subcounter += 1
         else:
             print(f'{counter}. {entry.url} :: {entry.title} :: No RSS channels found')
 
