@@ -17,16 +17,30 @@ def search_rss_meta(html):
     soup = BeautifulSoup(html, 'html.parser')
     meta = soup.find_all('link', {'type': 'application/rss+xml'})
 
-    links = []
-    for link in meta:
-        if link.has_attr('href'):
-            links.append(str(link['href']))
+    rss_links = []
+    for rss_link in meta:
+        if rss_link.has_attr('href'):
+            rss_links.append(str(rss_link['href']))
 
-    return links
+    return rss_links
 
 
 def search_rss_links(html):
-    pass
+    soup = BeautifulSoup(html, 'html.parser')
+    all_links = soup.find_all('a')
+
+    rss_links = []
+    for link in all_links:
+        if link.has_attr('href'):
+            has_rss = False
+            href = link.get('href')
+            for checker in __checklist:
+                if checker in href:
+                    has_rss = True
+            if has_rss:
+                rss_links.append(href)
+
+    return rss_links
 
 
 def search_rss_icons(html):
@@ -60,6 +74,7 @@ def get_content(url):
 class Entry:
     rss_finders = [
         search_rss_meta,
+        search_rss_links,
     ]
 
     def __init__(self, entry):

@@ -1,6 +1,5 @@
-import os
-
 version = '0.1'
+project_title = 'RSS Grabber'
 
 
 def cast_exception(exception):
