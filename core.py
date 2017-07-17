@@ -22,7 +22,7 @@ def menu_option_fetch():
 
 
 def show_menu():
-    print(f'Welcome to grab-rss v{utils.version}')
+    print(f'Welcome to {utils.project_title} {utils.version}')
     print('Choose an option to continue:')
     print('1 or \'fetch\' :: Fetch rss by url list')
     print('0 or \'exit\' :: Quick exit from grab-rss')
@@ -35,7 +35,7 @@ def show_menu():
         elif response == '0' or response == 'stop' or response == 'exit' or response == 'quit' or response == 'q':
             break
         print('Enter new option, please: ')
-    print('Thank you for using grab-rss! Good bye!')
+    print(f'Thank you for using {utils.project_title}! Good bye!')
 
 
 def main():
