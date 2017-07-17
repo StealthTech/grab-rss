@@ -59,12 +59,12 @@ def get_content(url):
 
 def find_rss_meta(text):
 	page = BS(text, 'html.parser')
-	meta = page.findall('link', {'type': 'application/rss+xml'})
+	meta = page.find_all('link', {'type': 'application/rss+xml'})
 
 	links = []
 	for link in meta:
 		if link.has_attr('href'):
-			links.add(str(link['href']))
+			links.append(str(link['href']))
 
 	return links
 
