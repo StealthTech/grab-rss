@@ -3,3 +3,7 @@ env/
 
 # Python meta files
 __pycache__
+.idea/
+
+# Dataset files
+*.urls
