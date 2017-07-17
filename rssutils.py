@@ -26,7 +26,14 @@ def search_rss_meta(html):
 
 
 def search_rss_links(html):
-    pass
+    soup = BeautifulSoup(html, 'html.parser')
+    links = []
+    for link in soup.find_all('a'):
+        href = link.get('href')
+        string = link.get_text()
+        if href and ('rss' in href.casefold() or 'rss' in string.casefold()):
+            links.append(href)
+    return links
 
 
 def search_rss_icons(html):
@@ -60,13 +67,15 @@ def get_content(url):
 class Entry:
     rss_finders = [
         search_rss_meta,
+        search_rss_links
+        
     ]
 
     def __init__(self, entry):
         self.entry = entry
         self.url = fetch_url(entry)
 
-        if not self.url.startswith('http'):
+        if self.url and not self.url.startswith('http'):
             self.url = 'http://' + self.url
 
         self.html = ''
