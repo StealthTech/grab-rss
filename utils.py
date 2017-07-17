@@ -9,6 +9,9 @@ def cast_exception(exception):
 
 
 def load(filename):
+    if not filename.startswith('data/'):
+        filename = 'data/' + filename
+
     result = []
     try:
         with open(filename, 'r') as f:

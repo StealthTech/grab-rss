@@ -3,7 +3,7 @@ import utils
 
 
 def menu_option_fetch():
-    filename = input()
+    filename = input('Enter the name of file with url list: ')
     entries = []
     for title in utils.load(filename):
         entries.append(rssutils.Entry(title))
