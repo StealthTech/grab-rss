@@ -3,7 +3,7 @@ import utils
 
 
 def menu_option_fetch():
-    filename = input()
+    filename = input('Enter the name of file with url list: ')
     entries = []
     for title in utils.load(filename):
         entries.append(rssutils.Entry(title))
@@ -12,11 +12,11 @@ def menu_option_fetch():
     for entry in entries:
         entry.parse()
         if len(entry.rss):
-            print(f'{counter}. {entry.url} :: Found {len(entry.rss)} RSS channel(s)')
+            print(f'{counter}. {entry.url} :: {entry.title} :: Found {len(entry.rss)} RSS channel(s)')
             for rss in entry.rss:
                 print(f'∟ {rss}')
         else:
-            print(f'{counter}. {entry.url} :: No RSS channels found')
+            print(f'{counter}. {entry.url} :: {entry.title} :: No RSS channels found')
 
         counter += 1
 

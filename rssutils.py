@@ -70,6 +70,7 @@ class Entry:
             self.url = 'http://' + self.url
 
         self.html = ''
+        self.title = ''
 
         self.rss = []
         self.request_error = False
@@ -81,6 +82,8 @@ class Entry:
             return None
 
         self.html = html
+        soup = BeautifulSoup(self.html, 'html.parser')
+        self.title = soup.find('title').text
 
         for handler in Entry.rss_finders:
             result = handler(html)
