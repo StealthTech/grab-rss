@@ -3,11 +3,19 @@ import os
 version = '0.1'
 
 
+def cast_exception(exception):
+    prefix = 'ERROR :: '
+    print(f'{prefix}{exception}')
+
+
 def load(filename):
     result = []
-    if os.path.exists(filename):
+    try:
         with open(filename, 'r') as f:
             result = f.readlines()
-    else:
-        print('ERROR: File does not exist')
+    except IsADirectoryError as e:
+        cast_exception(e)
+    except FileNotFoundError as e:
+        cast_exception(e)
+
     return result
