@@ -2,10 +2,10 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
-RSS_STATUS_CANT_REACH = 0
-RSS_STATUS_FOUND = 1
-RSS_STATUS_TEXT_FOUND = 2
-RSS_STATUS_NOT_FOUND = 3
+# RSS_STATUS_CANT_REACH = 0
+# RSS_STATUS_FOUND = 1
+# RSS_STATUS_TEXT_FOUND = 2
+# RSS_STATUS_NOT_FOUND = 3
 
 __checklist = [
     'rss',
@@ -13,39 +13,24 @@ __checklist = [
 ]
 
 
-def pull(url):
-    r = requests.get(url)
-
-    if r.status_code == 200:
-        found = __search(r.text)
-        if found:
-            # print(found)
-            return RSS_STATUS_FOUND
-        else:
-            text_found = False
-            for checker in __checklist:
-                if checker in r.text:
-                    text_found = True
-            if text_found:
-                return RSS_STATUS_TEXT_FOUND
-            else:
-                return RSS_STATUS_NOT_FOUND
-    else:
-        return RSS_STATUS_CANT_REACH
-
-
-def __search(html):
+def search_rss_meta(html):
     soup = BeautifulSoup(html, 'html.parser')
+    meta = soup.find_all('link', {'type': 'application/rss+xml'})
 
-    result = soup.find_all('link', {'type': 'application/rss+xml'})
-    # result.extend(soup.find_all('a'))
-    for rss in result:
-        print(rss.get('href'))
+    links = []
+    for link in meta:
+        if link.has_attr('href'):
+            links.append(str(link['href']))
 
-    if len(result) > 0:
-        return result
-    else:
-        return None
+    return links
+
+
+def search_rss_links(html):
+    pass
+
+
+def search_rss_icons(html):
+    pass
 
 
 def fetch_url(name):
@@ -56,11 +41,49 @@ def fetch_url(name):
     return match.group(0)
 
 
+def get_content(url):
+    error = None
+    r = ''
+    try:
+        r = requests.get(url)
+        if r.status_code != 200:
+            error = r.status_code
+    except:
+        error = 'ERROR: Exception occurred'
+
+    if not error:
+        return r.text, None
+    else:
+        return None, error
+
+
 class Entry:
-    def __init__(self, text):
-        self.text = text
-        self.url = fetch_url(text)
-        self.rss_filenames = []
-        self.rss_in_plain_text = False
+    rss_finders = [
+        search_rss_meta,
+    ]
+
+    def __init__(self, entry):
+        self.entry = entry
+        self.url = fetch_url(entry)
+
+        if not self.url.startswith('http'):
+            self.url = 'http://' + self.url
+
+        self.html = ''
+
+        self.rss = []
         self.request_error = False
 
+    def parse(self):
+        html, error = get_content(self.url)
+        if error:
+            self.request_error = True
+            return None
+
+        self.html = html
+
+        for handler in Entry.rss_finders:
+            result = handler(html)
+            if result:
+                self.rss = result
+                break

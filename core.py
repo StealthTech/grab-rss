@@ -1,30 +1,34 @@
 import rssutils
 import utils
 
-VERSION = '0.1'
 
-
-def menu():
-    print(f'Welcome to grab-rss v{VERSION}')
+def show_menu():
+    print(f'Welcome to grab-rss v{utils.version}')
     print('Choose an option to continue:')
     print('1 or \'fetch\' :: Fetch rss by url list')
+    print('0 or \'exit\' :: Quick exit from grab-rss')
     while True:
         response = input().casefold()
         if response == '1' or response == 'fetch':
             filename = input()
-            urls = []
+            entries = []
             for title in utils.load(filename):
-                urls.append(rssutils.fetch_url(title))
-            for url in urls:
-                print('res', rssutils.pull(url))
-        elif response == '0' or response == 'stop':
+                entries.append(rssutils.Entry(title))
+            print(f'Total entries loaded: {len(entries)}')
+            counter = 1
+            for entry in entries:
+                entry.parse()
+                print(f'{counter}. {entry.url} :: {entry.rss}')
+                counter += 1
+
+        elif response == '0' or response == 'exit':
             break
         print('Enter new option, please: ')
     print('Thank you for using grab-rss! Good bye!')
 
 
 def main():
-    menu()
+    show_menu()
 
 if __name__ == '__main__':
     main()

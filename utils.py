@@ -1,5 +1,7 @@
 import os
 
+version = '0.1'
+
 
 def load(filename):
     result = []
