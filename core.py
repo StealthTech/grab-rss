@@ -4,8 +4,14 @@ import utils
 
 def menu_option_fetch():
     filename = input('Enter the name of file with url list: ')
+
     entries = []
-    for title in utils.load(filename):
+
+    payload = utils.load(filename)
+    if not payload:
+        return
+
+    for title in payload:
         entries.append(rssutils.Entry(title))
     print(f'Total entries loaded: {len(entries)}')
 
