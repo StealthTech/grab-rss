@@ -5,9 +5,12 @@ version = '0.1'
 project_title = 'RSS Grabber'
 
 __data_dir = 'data/'
+__input_dir = __data_dir + 'input/'
+__output_dir = __data_dir + 'output/'
 
 __ext_url_list = 'urls'
 __ext_report = 'repr'
+
 
 def cast_exception(exception):
     prefix = 'ERROR :: '
@@ -15,8 +18,8 @@ def cast_exception(exception):
 
 
 def load(filename):
-    if not filename.startswith(__data_dir):
-        filepath = __data_dir + filename
+    if not filename.startswith(__input_dir):
+        filepath = __input_dir + filename
     else:
         filepath = filename
 
@@ -33,12 +36,18 @@ def load(filename):
 
 
 def dump(entries, filename, heading=None):
-    filepath = __data_dir + filename
+    filepath = __output_dir + filename
+    filedir = os.path.dirname(os.path.abspath(filepath))
+
+    if not os.path.exists(filedir):
+          os.makedirs(filedir)
+
     if os.path.exists(filepath) and not os.path.isdir(filepath):
         response = input(f'File \'{filepath}\' already exists. Are you sure you want to overwrite it (Y/N)?  ').casefold()
-        if not response == 'yes' or response == 'y':
+        if not (response == 'yes' or response == 'y'):
             print('Dump aborted. No changes were saved')
             return
+
     try:
         with open(filepath, 'w') as f:
             if heading:

@@ -38,10 +38,10 @@ def menu_option_fetch():
 
         counter += 1
 
-    utils.dump(entries_no_rss, 'no_rss.txt', 'Results with no rss channels found')
-    utils.dump(entries_has_rss, 'has_rss.txt', 'Results with rss channels')
-    utils.dump(entries_no_url, 'no_url.txt', 'Results with no url in entry (invalid entry)')
-    utils.dump(entries_cant_reach, 'cant_reach.txt', 'Results that were not checked due to connection refuse')
+    utils.dump(entries_no_rss, f'{filename}/no_rss.txt', 'Results with no rss channels found')
+    utils.dump(entries_has_rss, f'{filename}/has_rss.txt', 'Results with rss channels')
+    utils.dump(entries_no_url, f'{filename}/no_url.txt', 'Results with no url in entry (invalid entry)')
+    utils.dump(entries_cant_reach, f'{filename}/cant_reach.txt', 'Results that were not checked due to connection refuse')
 
 
 def show_menu():
