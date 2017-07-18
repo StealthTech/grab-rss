@@ -27,14 +27,12 @@ def search_rss_links(html):
     rss_links = []
     for link in all_links:
         if link.has_attr('href'):
-            has_rss = False
-            href = link.get('href')
-            for checker in __checklist:
-                if checker in href:
-                    has_rss = True
-            if has_rss:
+            href = link.get('href').casefold()
+            text = link.get_text().casefold()
+            href_match = re.search('([^a-z]|^)rss([^a-z]|$)', href)
+            text_match = re.search('([^a-z]|^)rss([^a-z]|$)', text)
+            if href_match or text_match:
                 rss_links.append(href)
-
     return rss_links
 
 
@@ -64,6 +62,26 @@ def get_content(url):
         return r.text, None
     else:
         return None, error
+
+
+def traverse_common_links(url):
+    links = [
+        'rss',
+        'rss.xml',
+        'feed'
+    ]
+
+    if not url.endswith('/'):
+        url += '/'
+
+    pages_found = []
+
+    for link in links:
+        r = requests.get(url + link)
+        if r.status_code == 200:
+            pages_found.append(url + link)
+
+    return pages_found
 
 
 class Entry:
@@ -100,3 +118,23 @@ class Entry:
             if result:
                 self.rss = result
                 break
+
+        self.rss.extend(traverse_common_links(self.url))
+
+        self._normalize_rss()
+
+    def _normalize_rss(self):
+        url = self.url
+        if not url.endswith('/'):
+            url += '/'
+
+        normalized = []
+        for link in self.rss:
+            if not url.casefold() in link.casefold():
+                if link.casefold().startswith('http'):  # other website
+                    continue
+                link = self.url + link
+            normalized.append(link.lower())
+
+        self.rss = list(set(normalized))
+
