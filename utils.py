@@ -29,7 +29,7 @@ def load(filename):
         if not os.path.exists(filedir):
             os.makedirs(filedir)
 
-    result = []
+    result = None
     try:
         with open(filepath, 'r') as f:
             result = f.readlines()
