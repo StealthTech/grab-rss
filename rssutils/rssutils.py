@@ -2,11 +2,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
-__checklist = [
-    'rss',
-    'feed',
-]
-
+_rss_word_pattern = '([^a-z]|^)rss([^a-z]|$)'
 
 def search_rss_meta(html):
     soup = BeautifulSoup(html, 'html.parser')
@@ -29,8 +25,8 @@ def search_rss_links(html):
         if link.has_attr('href'):
             href = link.get('href').casefold()
             text = link.get_text().casefold()
-            href_match = re.search('([^a-z]|^)rss([^a-z]|$)', href)
-            text_match = re.search('([^a-z]|^)rss([^a-z]|$)', text)
+            href_match = re.search(_rss_word_pattern, href)
+            text_match = re.search(_rss_word_pattern, text)
             if href_match or text_match:
                 rss_links.append(href)
     return rss_links
@@ -102,13 +98,14 @@ class Entry:
 
         self.rss = []
         self.request_error = False
+        self.rss_in_text = False
 
     def parse(self):
         html, error = get_content(self.url)
         if error:
             self.request_error = True
             return None
-
+        self.rss_in_text = bool(re.search(_rss_word_pattern, html.casefold()))
         self.html = html
         soup = BeautifulSoup(self.html, 'html.parser')
 
@@ -129,17 +126,16 @@ class Entry:
         self._normalize_rss()
 
     def _normalize_rss(self):
-        url = self.url
-        if not url.endswith('/'):
-            url += '/'
-
+        site_name = '.'.join(self.url.split('://')[-1].split('.')[:-2])
+        if not site_name.endswith('/'):
+            site_name += '/'
+            
         normalized = []
         for link in self.rss:
-            if not url.casefold() in link.casefold():
-                if link.casefold().startswith('http'):  # other website
+            if not site_name.casefold() in link.casefold():
+                if link.casefold().startswith('http'): #other website
                     continue
                 link = self.url + link
             normalized.append(link.lower())
-
+            
         self.rss = list(set(normalized))
-
