@@ -113,7 +113,7 @@ class Entry:
         if title is None or title.text is None:
             self.title = '[ Page title is missing ]'
         else:
-            self.title = title
+            self.title = title.text
 
         for handler in Entry.rss_finders:
             result = handler(html)
