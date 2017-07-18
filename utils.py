@@ -23,6 +23,12 @@ def load(filename):
     else:
         filepath = filename
 
+    if not os.path.isdir(filepath):
+        filedir = os.path.dirname(os.path.abspath(filepath))
+
+        if not os.path.exists(filedir):
+            os.makedirs(filedir)
+
     result = []
     try:
         with open(filepath, 'r') as f:
