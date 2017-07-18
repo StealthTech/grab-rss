@@ -81,7 +81,7 @@ class Entry:
         self.entry = entry
         self.url = fetch_url(entry)
 
-        if not self.url.startswith('http'):
+        if self.url and not self.url.startswith('http'):
             self.url = 'http://' + self.url
 
         self.html = ''
