@@ -21,14 +21,12 @@ def search_rss_meta(html):
     for rss_link in meta:
         if rss_link.has_attr('href'):
             rss_links.append(str(rss_link['href']))
-
     return rss_links
 
 
 def search_rss_links(html):
     soup = BeautifulSoup(html, 'html.parser')
     all_links = soup.find_all('a')
-
     rss_links = []
     for link in all_links:
         if link.has_attr('href'):
@@ -107,13 +105,14 @@ class Entry:
 
         self.rss = []
         self.request_error = False
+        self.rss_in_text = False
 
     def parse(self):
         html, error = get_content(self.url)
         if error:
             self.request_error = True
             return None
-
+        self.rss_in_text = 'rss' in html.casefold()
         self.html = html
         soup = BeautifulSoup(self.html, 'html.parser')
         self.title = soup.find('title').text
@@ -123,32 +122,22 @@ class Entry:
             if result:
                 self.rss = result
                 break
-                
-        self.rss.extend(traverse_common_links(self.url))
         
+        self.rss.extend(traverse_common_links(self.url))   
         self._normalize_rss()
         
     def _normalize_rss(self):
-        url = self.url
-        if not url.endswith('/'):
-            url += '/'
+        site_name = '.'.join(self.url.split('://')[-1].split('.')[:-2])
+        if not site_name.endswith('/'):
+            site_name += '/'
             
         normalized = []
+        
         for link in self.rss:
-            if url.casefold() in link.casefold():
+            if not site_name.casefold() in link.casefold():
                 if link.casefold().startswith('http'): #other website
                     continue
                 link = self.url + link
             normalized.append(link.lower())
             
         self.rss = list(set(normalized))
-
-if __name__ == '__main__':
-    import codecs
-    entries = codecs.open('data/has_rss.urls', 'r', 'utf-8').read().strip().split('\n')
-    for e in entries:
-        print(e)
-        E = Entry(e)
-        if E.url:
-            E.parse()
-            print(E.rss)
