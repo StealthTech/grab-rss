@@ -60,7 +60,7 @@ def dump(entries, filename, heading=None):
                 f.write(f'::: {heading} :::\n\n')
             if len(entries):
                 for entry in entries:
-                    f.write(f'Entry: {entry.entry}\n')
+                    f.write(f'Entry: {entry.entry}')
                     f.write(f'Title: {entry.title}\n')
                     f.write(f'URL: {entry.url}\n')
 
@@ -71,7 +71,7 @@ def dump(entries, filename, heading=None):
                             counter += 1
                     f.write('\n')
             else:
-                'There\'s no matching results'
+                f.write('There\'s no matching results.\n')
     except IsADirectoryError as e:
         cast_exception(e)
     print(f'Dumped successfully to \'{filepath}\'')
