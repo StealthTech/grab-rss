@@ -2,11 +2,6 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
-# RSS_STATUS_CANT_REACH = 0
-# RSS_STATUS_FOUND = 1
-# RSS_STATUS_TEXT_FOUND = 2
-# RSS_STATUS_NOT_FOUND = 3
-
 __checklist = [
     'rss',
     'feed',
