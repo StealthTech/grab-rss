@@ -34,8 +34,8 @@ def search_rss_links(html):
         if link.has_attr('href'):
             href = link.get('href').casefold()
             text = link.get_text().casefold()
-            href_match = re.match('([^a-z]|^)rss([^a-z]|$)', href)
-            text_match = re.match('([^a-z]|^)rss([^a-z]|$)', text)
+            href_match = re.search('([^a-z]|^)rss([^a-z]|$)', href)
+            text_match = re.search('([^a-z]|^)rss([^a-z]|$)', text)
             if href_match or text_match:
                 rss_links.append(href)
     return rss_links
@@ -129,12 +129,26 @@ class Entry:
         self._normalize_rss()
         
     def _normalize_rss(self):
+        url = self.url
+        if not url.endswith('/'):
+            url += '/'
+            
         normalized = []
         for link in self.rss:
-            if not link.casefold().startswith(self.url.casefold()):
+            if url.casefold() in link.casefold():
                 if link.casefold().startswith('http'): #other website
                     continue
                 link = self.url + link
             normalized.append(link.lower())
             
         self.rss = list(set(normalized))
+
+if __name__ == '__main__':
+    import codecs
+    entries = codecs.open('data/has_rss.urls', 'r', 'utf-8').read().strip().split('\n')
+    for e in entries:
+        print(e)
+        E = Entry(e)
+        if E.url:
+            E.parse()
+            print(E.rss)
