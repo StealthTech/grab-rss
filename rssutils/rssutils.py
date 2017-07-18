@@ -126,7 +126,7 @@ class Entry:
         self._normalize_rss()
 
     def _normalize_rss(self):
-        site_name = '.'.join(self.url.split('://')[-1].split('.')[:-2])
+        site_name = '.'.join(self.url.split('://')[-1].split('.')[-2:])
         if not site_name.endswith('/'):
             site_name += '/'
             
