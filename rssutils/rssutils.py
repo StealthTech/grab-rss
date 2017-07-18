@@ -71,12 +71,10 @@ def traverse_common_links(url):
         url += '/'
 
     pages_found = []
-
     for link in links:
-        r = requests.get(url + link)
-        if r.status_code == 200:
+        html, error  = get_content(url + link)
+        if not error:
             pages_found.append(url + link)
-
     return pages_found
 
 
