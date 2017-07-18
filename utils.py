@@ -32,7 +32,7 @@ def load(filename):
     result = None
     try:
         with open(filepath, 'r') as f:
-            result = f.readlines()
+            result = f.read().strip().split('\n')
     except IsADirectoryError as e:
         cast_exception(e)
     except FileNotFoundError as e:
@@ -59,8 +59,9 @@ def dump(entries, filename, heading=None):
             if heading:
                 f.write(f'::: {heading} :::\n\n')
             if len(entries):
-                for entry in entries:
-                    f.write(f'Entry: {entry.entry}')
+                for number, entry in enumerate(entries):
+                    f.write(f'= = = = = = = = = = {number} = = = = = = = = = =\n')
+                    f.write(f'Entry: {entry.entry}\n')
                     f.write(f'Title: {entry.title}\n')
                     f.write(f'URL: {entry.url}\n')
 
