@@ -1,4 +1,4 @@
-import rssutils
+from rssutils import rssutils
 import utils
 
 
