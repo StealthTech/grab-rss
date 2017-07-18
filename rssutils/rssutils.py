@@ -111,7 +111,12 @@ class Entry:
 
         self.html = html
         soup = BeautifulSoup(self.html, 'html.parser')
-        self.title = soup.find('title').text
+
+        title = soup.find('title')
+        if title is None or title.text is None:
+            self.title = '[ Page title is missing ]'
+        else:
+            self.title = title
 
         for handler in Entry.rss_finders:
             result = handler(html)
