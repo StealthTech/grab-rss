@@ -57,7 +57,8 @@ def dump(entries, filename, heading=None):
     try:
         with open(filepath, 'w') as f:
             if heading:
-                f.write(f'::: {heading} :::\n\n')
+                f.write(f'::: {heading} :::\n')
+                f.write(f'::: Number of matching entries: {len(entries)} :::\n\n')
             if len(entries):
                 for number, entry in enumerate(entries):
                     f.write(f'= = = = = = = = = = {number} = = = = = = = = = =\n')
