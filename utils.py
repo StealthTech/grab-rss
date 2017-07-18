@@ -1,6 +1,13 @@
+import os
+import datetime
+
 version = '0.1'
 project_title = 'RSS Grabber'
 
+__data_dir = 'data/'
+
+__ext_url_list = 'urls'
+__ext_report = 'repr'
 
 def cast_exception(exception):
     prefix = 'ERROR :: '
@@ -8,12 +15,14 @@ def cast_exception(exception):
 
 
 def load(filename):
-    if not filename.startswith('data/'):
-        filename = 'data/' + filename
+    if not filename.startswith(__data_dir):
+        filepath = __data_dir + filename
+    else:
+        filepath = filename
 
     result = []
     try:
-        with open(filename, 'r') as f:
+        with open(filepath, 'r') as f:
             result = f.readlines()
     except IsADirectoryError as e:
         cast_exception(e)
@@ -21,3 +30,33 @@ def load(filename):
         cast_exception(e)
 
     return result
+
+
+def dump(entries, filename, heading=None):
+    filepath = __data_dir + filename
+    if os.path.exists(filepath) and not os.path.isdir(filepath):
+        response = input(f'File \'{filepath}\' already exists. Are you sure you want to overwrite it (Y/N)?  ').casefold()
+        if not response == 'yes' or response == 'y':
+            print('Dump aborted. No changes were saved')
+            return
+    try:
+        with open(filepath, 'w') as f:
+            if heading:
+                f.write(f'::: {heading} :::\n\n')
+            if len(entries):
+                for entry in entries:
+                    f.write(f'Entry: {entry.entry}\n')
+                    f.write(f'Title: {entry.title}\n')
+                    f.write(f'URL: {entry.url}\n')
+
+                    if len(entry.rss):
+                        counter = 1
+                        for rss_link in entry.rss:
+                            f.write(f'RSS{counter}: {rss_link}\n')
+                            counter += 1
+                    f.write('\n')
+            else:
+                'There\'s no matching results'
+    except IsADirectoryError as e:
+        cast_exception(e)
+    print(f'Dumped successfully to \'{filepath}\'')

@@ -8,9 +8,25 @@ def menu_option_fetch():
     for title in utils.load(filename):
         entries.append(rssutils.Entry(title))
     print(f'Total entries loaded: {len(entries)}')
+
+    entries_no_rss = []
+    entries_has_rss = []
+    entries_no_url = []
+    entries_cant_reach = []
+
     counter = 1
     for entry in entries:
         entry.parse()
+
+        if entry.request_error:
+            entries_cant_reach.append(entry)
+        elif entry.url == '':
+            entries_no_url.append(entry)
+        elif len(entry.rss):
+            entries_has_rss.append(entry)
+        else:
+            entries_no_rss.append(entry)
+
         if len(entry.rss):
             print(f'{counter}. {entry.url} :: {entry.title} :: Found {len(entry.rss)} RSS channel(s)')
             subcounter = 1
@@ -21,6 +37,11 @@ def menu_option_fetch():
             print(f'{counter}. {entry.url} :: {entry.title} :: No RSS channels found')
 
         counter += 1
+
+    utils.dump(entries_no_rss, 'no_rss.txt', 'Results with no rss channels found')
+    utils.dump(entries_has_rss, 'has_rss.txt', 'Results with rss channels')
+    utils.dump(entries_no_url, 'no_url.txt', 'Results with no url in entry (invalid entry)')
+    utils.dump(entries_cant_reach, 'cant_reach.txt', 'Results that were not checked due to connection refuse')
 
 
 def show_menu():
@@ -36,7 +57,7 @@ def show_menu():
 
         elif response == '0' or response == 'stop' or response == 'exit' or response == 'quit' or response == 'q':
             break
-        print('Enter new option, please: ')
+        print('\nEnter new option, please: ')
     print(f'Thank you for using {utils.project_title}! Good bye!')
 
 
