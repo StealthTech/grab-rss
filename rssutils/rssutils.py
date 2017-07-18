@@ -3,6 +3,7 @@ import re
 from bs4 import BeautifulSoup
 
 _rss_word_pattern = '([^a-z]|^)rss([^a-z]|$)'
+__request_get_timeout = 5 # Request timeout in seconds
 
 
 def search_rss_meta(html):
@@ -49,7 +50,7 @@ def get_content(url):
     error = None
     r = ''
     try:
-        r = requests.get(url)
+        r = requests.get(url, timeout=__request_get_timeout)
         if r.status_code != 200:
             error = r.status_code
     except:
