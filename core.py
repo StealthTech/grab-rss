@@ -23,12 +23,13 @@ def menu_option_fetch():
 
     counter = 1
     for entry in entries:
-        entry.parse()
+        if not entry.url:
+            entries_no_url.append(entry)
+            continue
 
+        entry.parse()
         if entry.request_error:
             entries_cant_reach.append(entry)
-        elif entry.url == '':
-            entries_no_url.append(entry)
         elif len(entry.rss):
             entries_has_rss.append(entry)
         elif entry.rss_in_text:
@@ -42,6 +43,8 @@ def menu_option_fetch():
             for rss in entry.rss:
                 print(f'   ∟ {subcounter}. {rss}')
                 subcounter += 1
+        elif not entry.url:
+            print(f'{counter}. {entry.entry} :: Invalid entry format')
         else:
             print(f'{counter}. {entry.url} :: {entry.title} :: No RSS channels found')
 

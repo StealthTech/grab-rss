@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 _rss_word_pattern = '([^a-z]|^)rss([^a-z]|$)'
 
+
 def search_rss_meta(html):
     soup = BeautifulSoup(html, 'html.parser')
     meta = soup.find_all('link', {'type': 'application/rss+xml'})
@@ -111,7 +112,7 @@ class Entry:
         if title is None or title.text is None:
             self.title = '[ Page title is missing ]'
         else:
-            self.title = title.text
+            self.title = str(title.text).strip()
 
         for handler in Entry.rss_finders:
             result = handler(html)
