@@ -2,6 +2,10 @@ from rssutils import rssutils
 import utils
 
 
+async def parse(entry, categories):
+    pass
+
+
 def menu_option_fetch():
     filename = input('Enter the name of file with url list: ')
 
@@ -15,27 +19,29 @@ def menu_option_fetch():
         entries.append(rssutils.Entry(title))
     print(f'Total entries loaded: {len(entries)}')
 
-    entries_no_rss = []
-    entries_has_rss = []
-    entries_has_rss_in_text = []
-    entries_no_url = []
-    entries_cant_reach = []
+    categories = {
+        'no_rss': [],
+        'has_rss': [],
+        'has_rss_in_text': [],
+        'no_url': [],
+        'cant_reach': [],
+    }
 
     counter = 1
     for entry in entries:
         if not entry.url:
-            entries_no_url.append(entry)
+            categories['no_url'].append(entry)
             continue
 
         entry.parse()
         if entry.request_error:
-            entries_cant_reach.append(entry)
+            categories['cant_reach'].append(entry)
         elif len(entry.rss):
-            entries_has_rss.append(entry)
+            categories['has_rss'].append(entry)
         elif entry.rss_in_text:
-            entries_has_rss_in_text.append(entry)
+            categories['has_rss_in_text'].append(entry)
         else:
-            entries_no_rss.append(entry)
+            categories['no_rss'].append(entry)
 
         if len(entry.rss):
             print(f'{counter}. {entry.url} :: {entry.title} :: Found {len(entry.rss)} RSS channel(s)')
@@ -50,12 +56,16 @@ def menu_option_fetch():
 
         counter += 1
 
-    utils.dump(entries_cant_reach, f'{filename}/cant_reach.txt', 'Results that were not checked due to connection refuse')
-    utils.dump(entries_no_url, f'{filename}/no_url.txt', 'Results with no url in entry (invalid entry)')
-    utils.dump(entries_has_rss, f'{filename}/has_rss.txt', 'Results with rss channels')
-    utils.dump(entries_has_rss_in_text, f'{filename}/has_rss_in_text.txt', 'Results that probably have rss channels '
-                                                                           '(found no meta but \'RSS\' in text)')
-    utils.dump(entries_no_rss, f'{filename}/no_rss.txt', 'Results with no rss channels found')
+    utils.dump(categories['cant_reach'],
+               f'{filename}/cant_reach.txt', 'Results that were not checked due to connection refuse')
+    utils.dump(categories['no_url'],
+               f'{filename}/no_url.txt', 'Results with no url in entry (invalid entry)')
+    utils.dump(categories['has_rss'],
+               f'{filename}/has_rss.txt', 'Results with rss channels')
+    utils.dump(categories['has_rss_in_text'],
+               f'{filename}/has_rss_in_text.txt', 'Results that probably have rss channels (found \'RSS\' in text)')
+    utils.dump(categories['no_rss'],
+               f'{filename}/no_rss.txt', 'Results with no rss channels found')
 
 
 def show_menu():
