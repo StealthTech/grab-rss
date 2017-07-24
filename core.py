@@ -1,9 +1,74 @@
 from rssutils import rssutils
 import utils
+import asyncio
+import aiohttp
+import time
+
+parsed_count = 0
 
 
-async def parse(entry, categories):
-    pass
+async def parse(entry, categories, session):
+    global parsed_count
+
+    if not entry.url:
+        parsed_count += 1
+        # print(f'{parsed_count}. {entry.entry} :: Invalid format (no url specified)')
+
+        categories['no_url'].append(entry)
+        print(f'{parsed_count}. {entry.entry} :: Invalid entry format (no url specified)')
+        return
+
+    # print(f'Started parsing of {entry.url}')
+    await entry.parse(session)
+    if entry.request_error:
+        print(entry.html)
+        parsed_count += 1
+        categories['cant_reach'].append(entry)
+        print(f'{parsed_count}. {entry.entry} :: {entry.url} :: Server not responding (can\'t reach)')
+    elif len(entry.rss):
+        parsed_count += 1
+        categories['has_rss'].append(entry)
+        print(f'{parsed_count}. {entry.url} :: {entry.title} :: Found {len(entry.rss)} RSS channel(s)')
+        subcounter = 1
+        for rss in entry.rss:
+            print(f'   ∟ {subcounter}. {rss}')
+            subcounter += 1
+    elif entry.rss_in_text:
+        categories['has_rss_in_text'].append(entry)
+    else:
+        parsed_count += 1
+        categories['no_rss'].append(entry)
+        print(f'{parsed_count}. {entry.url} :: {entry.title} :: No RSS channels found')
+
+    # if len(entry.rss):
+    #     parsed_count += 1
+    #     print(f'{parsed_count}. {entry.url} :: {entry.title} :: Found {len(entry.rss)} RSS channel(s)')
+    #     subcounter = 1
+    #     for rss in entry.rss:
+    #         print(f'   ∟ {subcounter}. {rss}')
+    #         subcounter += 1
+    # elif not entry.url:
+    #     parsed_count += 1
+    #     print(f'{parsed_count}. {entry.entry} :: Invalid entry format')
+    # else:
+    #     parsed_count += 1
+    #     print(f'{parsed_count}. {entry.url} :: {entry.title} :: No RSS channels found')
+
+
+# def fetch(entries, categories):
+#     coroutines = [parse(entry, categories) for entry in entries]
+#     event_loop = asyncio.get_event_loop()
+#     event_loop.run_until_complete(asyncio.wait(coroutines))
+#     event_loop.close()
+
+async def fetch(entries, categories):
+    global parsed_count
+
+    start = time.time()
+    with aiohttp.ClientSession() as session:
+        tasks = [asyncio.ensure_future(parse(entry, categories, session)) for entry in entries]
+        await asyncio.wait(tasks)
+    print("Process took: {:.2f} seconds".format(time.time() - start))
 
 
 def menu_option_fetch():
@@ -27,34 +92,17 @@ def menu_option_fetch():
         'cant_reach': [],
     }
 
-    counter = 1
-    for entry in entries:
-        if not entry.url:
-            categories['no_url'].append(entry)
-            continue
+    # parse
 
-        entry.parse()
-        if entry.request_error:
-            categories['cant_reach'].append(entry)
-        elif len(entry.rss):
-            categories['has_rss'].append(entry)
-        elif entry.rss_in_text:
-            categories['has_rss_in_text'].append(entry)
-        else:
-            categories['no_rss'].append(entry)
+    event_loop = asyncio.get_event_loop()
+    event_loop.run_until_complete(fetch(entries, categories))
 
-        if len(entry.rss):
-            print(f'{counter}. {entry.url} :: {entry.title} :: Found {len(entry.rss)} RSS channel(s)')
-            subcounter = 1
-            for rss in entry.rss:
-                print(f'   ∟ {subcounter}. {rss}')
-                subcounter += 1
-        elif not entry.url:
-            print(f'{counter}. {entry.entry} :: Invalid entry format')
-        else:
-            print(f'{counter}. {entry.url} :: {entry.title} :: No RSS channels found')
-
-        counter += 1
+    print(':::: Fetch statistics ::::')
+    print(f'Entries with no RSS: {len(categories["no_rss"])}')
+    print(f'Entries with RSS: {len(categories["has_rss"])}')
+    print(f'Entries with RSS in text: {len(categories["has_rss_in_text"])}')
+    print(f'Entries with no url: {len(categories["no_url"])}')
+    print(f'Entries with url but not responding: {len(categories["cant_reach"])}')
 
     utils.dump(categories['cant_reach'],
                f'{filename}/cant_reach.txt', 'Results that were not checked due to connection refuse')
