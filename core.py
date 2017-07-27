@@ -77,6 +77,7 @@ def menu_option_fetch():
 
     payload = utils.load(filename)
     if not payload:
+        print(f'Can\'t open file {filename}')
         return
 
     for title in payload:
@@ -137,7 +138,7 @@ def show_menu():
     print('1 or \'fetch\' :: Fetch rss by url list')
     print('0 or \'exit\' :: Quick exit from grab-rss')
     while True:
-        response = input().casefold()
+        response = input('> ').casefold()
 
         if response == '1' or response == 'fetch':
             menu_option_fetch()

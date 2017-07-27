@@ -53,7 +53,7 @@ async def get_content(url, session):
     try:
         # r = requests.get(url, timeout=__request_get_timeout)
 
-        r = await session.get(url, timeout=15)
+        r = await session.get(url, timeout=20)
 
         # aiohttp.request('GET', url)
         if r.status != 200:
@@ -61,7 +61,7 @@ async def get_content(url, session):
         # print('>' * 10, url, r.status, error)
 
     except Exception as e:
-        print(f'ex :: get_content :: {url} :: {e}')
+        # print(f'ex :: get_content :: {url} :: {e}')
         error = 'ERROR: Exception occurred'
 
     if not error:

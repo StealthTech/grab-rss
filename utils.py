@@ -1,7 +1,7 @@
 import os
 import datetime
 
-version = '0.1'
+version = '0.2'
 project_title = 'RSS Grabber'
 
 __data_dir = 'data/'
@@ -63,8 +63,10 @@ def dump(entries, filename, heading=None):
                 for number, entry in enumerate(entries):
                     f.write(f'= = = = = = = = = = {number} = = = = = = = = = =\n')
                     f.write(f'Entry: {entry.entry}\n')
-                    f.write(f'Title: {entry.title}\n')
-                    f.write(f'URL: {entry.url}\n')
+                    if entry.title:
+                        f.write(f'Title: {entry.title}\n')
+                    if entry.url:
+                        f.write(f'URL: {entry.url}\n')
 
                     if len(entry.rss):
                         counter = 1
