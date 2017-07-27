@@ -1,7 +1,7 @@
 import os
 import datetime
 
-version = '0.1'
+version = '0.2'
 project_title = 'RSS Grabber'
 
 __data_dir = 'data/'
@@ -32,7 +32,7 @@ def load(filename):
     result = None
     try:
         with open(filepath, 'r') as f:
-            result = f.readlines()
+            result = f.read().strip().split('\n')
     except IsADirectoryError as e:
         cast_exception(e)
     except FileNotFoundError as e:
@@ -57,12 +57,16 @@ def dump(entries, filename, heading=None):
     try:
         with open(filepath, 'w') as f:
             if heading:
-                f.write(f'::: {heading} :::\n\n')
+                f.write(f'::: {heading} :::\n')
+                f.write(f'::: Number of matching entries: {len(entries)} :::\n\n')
             if len(entries):
-                for entry in entries:
-                    f.write(f'Entry: {entry.entry}')
-                    f.write(f'Title: {entry.title}\n')
-                    f.write(f'URL: {entry.url}\n')
+                for number, entry in enumerate(entries):
+                    f.write(f'= = = = = = = = = = {number} = = = = = = = = = =\n')
+                    f.write(f'Entry: {entry.entry}\n')
+                    if entry.title:
+                        f.write(f'Title: {entry.title}\n')
+                    if entry.url:
+                        f.write(f'URL: {entry.url}\n')
 
                     if len(entry.rss):
                         counter = 1

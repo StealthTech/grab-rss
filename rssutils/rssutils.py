@@ -1,8 +1,11 @@
 import requests
+import aiohttp
 import re
 from bs4 import BeautifulSoup
 
 _rss_word_pattern = '([^a-z]|^)rss([^a-z]|$)'
+__request_get_timeout = 5 # Request timeout in seconds
+
 
 def search_rss_meta(html):
     soup = BeautifulSoup(html, 'html.parser')
@@ -44,23 +47,36 @@ def fetch_url(name):
     return match.group(0)
 
 
-def get_content(url):
+async def get_content(url, session):
     error = None
     r = ''
     try:
-        r = requests.get(url)
-        if r.status_code != 200:
-            error = r.status_code
-    except:
+        # r = requests.get(url, timeout=__request_get_timeout)
+
+        r = await session.get(url, timeout=20)
+
+        # aiohttp.request('GET', url)
+        if r.status != 200:
+            error = r.status
+        # print('>' * 10, url, r.status, error)
+
+    except Exception as e:
+        # print(f'ex :: get_content :: {url} :: {e}')
         error = 'ERROR: Exception occurred'
 
     if not error:
-        return r.text, None
+        try:
+            result = await r.text()
+        except UnicodeError:
+            return 'Invalid unicode', None
+        else:
+            return result, None
+        # return await r.text(), None
     else:
         return None, error
 
 
-def traverse_common_links(url):
+async def traverse_common_links(url, session):
     links = [
         'rss',
         'rss.xml',
@@ -71,12 +87,10 @@ def traverse_common_links(url):
         url += '/'
 
     pages_found = []
-
     for link in links:
-        r = requests.get(url + link)
-        if r.status_code == 200:
+        html, error = await get_content(url + link, session)
+        if not error:
             pages_found.append(url + link)
-
     return pages_found
 
 
@@ -86,7 +100,12 @@ class Entry:
         search_rss_links,
     ]
 
+    next_id = 1
+
     def __init__(self, entry):
+        self.id = Entry.next_id
+        Entry.next_id += 1
+
         self.entry = entry
         self.url = fetch_url(entry)
 
@@ -100,8 +119,9 @@ class Entry:
         self.request_error = False
         self.rss_in_text = False
 
-    def parse(self):
-        html, error = get_content(self.url)
+    async def parse(self, session):
+        html, error = await get_content(self.url, session)
+        # print(error)
         if error:
             self.request_error = True
             return None
@@ -113,7 +133,7 @@ class Entry:
         if title is None or title.text is None:
             self.title = '[ Page title is missing ]'
         else:
-            self.title = title.text
+            self.title = str(title.text).strip()
 
         for handler in Entry.rss_finders:
             result = handler(html)
@@ -121,12 +141,12 @@ class Entry:
                 self.rss = result
                 break
 
-        self.rss.extend(traverse_common_links(self.url))
+        self.rss.extend(await traverse_common_links(self.url, session))
 
         self._normalize_rss()
 
     def _normalize_rss(self):
-        site_name = '.'.join(self.url.split('://')[-1].split('.')[:-2])
+        site_name = '.'.join(self.url.split('://')[-1].split('.')[-2:])
         if not site_name.endswith('/'):
             site_name += '/'
             
