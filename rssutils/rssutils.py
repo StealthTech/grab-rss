@@ -58,8 +58,10 @@ async def get_content(url, session):
         # aiohttp.request('GET', url)
         if r.status != 200:
             error = r.status
-        print('>' * 10, url, r.status, error)
-    except:
+        # print('>' * 10, url, r.status, error)
+
+    except Exception as e:
+        print(f'ex :: get_content :: {url} :: {e}')
         error = 'ERROR: Exception occurred'
 
     if not error:
