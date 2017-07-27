@@ -39,26 +39,6 @@ async def parse(entry, categories, session):
         categories['no_rss'].append(entry)
         print(f'{parsed_count}. {entry.url} :: {entry.title} :: No RSS channels found')
 
-    # if len(entry.rss):
-    #     parsed_count += 1
-    #     print(f'{parsed_count}. {entry.url} :: {entry.title} :: Found {len(entry.rss)} RSS channel(s)')
-    #     subcounter = 1
-    #     for rss in entry.rss:
-    #         print(f'   ∟ {subcounter}. {rss}')
-    #         subcounter += 1
-    # elif not entry.url:
-    #     parsed_count += 1
-    #     print(f'{parsed_count}. {entry.entry} :: Invalid entry format')
-    # else:
-    #     parsed_count += 1
-    #     print(f'{parsed_count}. {entry.url} :: {entry.title} :: No RSS channels found')
-
-
-# def fetch(entries, categories):
-#     coroutines = [parse(entry, categories) for entry in entries]
-#     event_loop = asyncio.get_event_loop()
-#     event_loop.run_until_complete(asyncio.wait(coroutines))
-#     event_loop.close()
 
 async def fetch(entries, categories):
     global parsed_count
@@ -68,6 +48,10 @@ async def fetch(entries, categories):
         tasks = [asyncio.ensure_future(parse(entry, categories, session)) for entry in entries]
         await asyncio.wait(tasks)
     print("Process took: {:.2f} seconds".format(time.time() - start))
+
+
+def run_sliced(loop, lst, step):
+    pass
 
 
 def menu_option_fetch():
@@ -95,10 +79,10 @@ def menu_option_fetch():
     # parse
 
     event_loop = asyncio.get_event_loop()
-    step = 20
 
+    step = 20
     start = time.time()
-    for i in range(len(entries) // 10 + int(bool(len(entries) % step))):
+    for i in range(len(entries) // step + int(bool(len(entries) % step))):
         # print(entries[i * step:i * step + step])
         entries_sliced = entries[i * step:i * step + step]
         if entries_sliced:
@@ -108,6 +92,29 @@ def menu_option_fetch():
     global parsed_count
     parsed_count = 0
 
+    if len(categories['cant_reach']):
+        l = len(categories['cant_reach'])
+        response = input(f':::: Entries with url but not responding: {l} ::::\n'
+                         f'There is a bunch of entries with no response. '
+                         f'Do you want to check it one more time (Y/N)? ').casefold()
+        if response == 'y' or response == 'yes':
+            step = 20
+            start = time.time()
+            # print(categories['cant_reach'])
+            # print(len(categories['cant_reach']) // step + int(bool(len(categories['cant_reach']) % step)))
+
+            for i in range(len(categories['cant_reach']) // step + int(bool(len(categories['cant_reach']) % step))):
+                entries_sliced = categories['cant_reach'][i * step:i * step + step]
+                print(entries_sliced)
+                if entries_sliced:
+                    event_loop.run_until_complete(fetch(entries_sliced, categories))
+            print("Total time elapsed: {:.2f} seconds".format(time.time() - start))
+            parsed_count = 0
+
+    for key, value in categories.items():
+        if isinstance(value, list):
+            categories[key] = list(set(value))
+
     print(':::: Fetch statistics ::::')
     print(f'Total entries count: {len(entries)}')
     print(f'Entries with no RSS: {len(categories["no_rss"])}')
@@ -116,7 +123,7 @@ def menu_option_fetch():
     print(f'Entries with no url: {len(categories["no_url"])}')
     print(f'Entries with url but not responding: {len(categories["cant_reach"])}')
 
-    response = input(f'Do you want to dump results to folder \'{filename}\' (Y/N)?')
+    response = input(f'Do you want to dump results to folder \'{filename}\' (Y/N)? ')
     if response.casefold() == 'y':
         utils.dump(categories['cant_reach'],
                    f'{filename}/cant_reach.txt', 'Results that were not checked due to connection refuse')
