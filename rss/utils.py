@@ -1,5 +1,6 @@
 import os
-import datetime
+
+echo = True
 
 version = '0.2'
 project_title = 'RSS Grabber'

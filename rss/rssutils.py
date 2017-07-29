@@ -1,5 +1,3 @@
-import requests
-import aiohttp
 import re
 from bs4 import BeautifulSoup
 

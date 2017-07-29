@@ -2,7 +2,7 @@ import time
 import asyncio
 import aiohttp
 
-from rssutils.rssutils import *
+from rss.rssutils import *
 
 
 class Entry:
@@ -97,7 +97,10 @@ class EntryManager():
         return self.entry_buffer
 
     @property
-    def count(self):
+    def count(self, category=None):
+        if category in self.categories:
+            if isinstance(self.categories[category], list):
+                return len(self.categories[category])
         return len(self.entry_buffer)
 
     @property
@@ -137,7 +140,7 @@ class EntryManager():
             if entry not in self.categories:
                 self.categories['cant_reach'].append(entry)
             print(
-                f'{self.parsed_count}. {entry.entry} :: {entry.url} :: Server not responding (can\'t reach) :: {entry.request_error}')
+                f'{self.parsed_count}. {entry.entry} :: {entry.url} :: Server not responding (can\'t reach)')
         elif len(entry.rss):
             self.parsed_count += 1
             if entry not in self.categories:
