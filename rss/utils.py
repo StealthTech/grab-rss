@@ -47,10 +47,11 @@ def dump(entries, filename, heading=None):
     filedir = os.path.dirname(os.path.abspath(filepath))
 
     if not os.path.exists(filedir):
-          os.makedirs(filedir)
+        os.makedirs(filedir)
 
     if os.path.exists(filepath) and not os.path.isdir(filepath):
-        response = input(f'File \'{filepath}\' already exists. Are you sure you want to overwrite it (Y/N)?  ').casefold()
+        response = input(f'File \'{filepath}\' already exists. '
+                         f'Are you sure you want to overwrite it (Y/N)?  ').casefold()
         if not (response == 'yes' or response == 'y'):
             print('Dump aborted. No changes were saved')
             return

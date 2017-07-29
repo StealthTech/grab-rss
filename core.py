@@ -1,5 +1,3 @@
-import asyncio
-
 from rss import utils
 from rss.entries import Entry, EntryManager
 
@@ -26,7 +24,7 @@ def show_menu():
 
     print(f'Welcome to {utils.project_title} {utils.version}')
     print('Choose an option to continue:')
-    print('1 or \'fetch\' :: Fetch rss by url list')
+    print('1 or \'fetch\' :: Fetch rss channels from url list')
     print('0 or \'exit\' :: Quick exit from grab-rss')
     while True:
         response = input('> ').casefold()

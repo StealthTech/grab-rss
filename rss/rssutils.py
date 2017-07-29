@@ -38,11 +38,15 @@ def search_rss_icons(html):
 
 
 def fetch_url(name):
-    url_pattern = re.compile("(https?:\/\/)?([a-z0-9_\-]{2,100}\.){1,3}[a-z]{2,5}(\/)?")
-    match = url_pattern.search(name.lower())
-    if not match:
-        return None
-    return match.group(0)
+    en_url_pattern = re.compile('(https?://)?([a-z0-9_\-]{2,100}\.){1,3}[a-z]{2,5}(/)?')
+    en_match = en_url_pattern.search(name.lower())
+    if en_match:
+        return en_match.group(0)
+
+    ru_url_pattern = re.compile('(https?://)?([а-я0-9_\-]{2,100}\.)рф(/)?')
+    ru_match = ru_url_pattern.search(name.lower())
+    if ru_match:
+        return ru_match.group(0)
 
 
 async def get_content(url, session):
