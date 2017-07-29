@@ -94,5 +94,3 @@ async def traverse_common_links(url, session):
         if not error:
             pages_found.append(url + link)
     return pages_found
-
-
