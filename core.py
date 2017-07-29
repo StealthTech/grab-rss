@@ -9,35 +9,21 @@ def menu_option_fetch():
 
     entry_manager = EntryManager()
 
-    payload = utils.load(filename)
-    if not payload:
-        print(f'Can\'t open file {filename}')
-        return
+    entry_manager.load_file(filename)
 
-    for title in payload:
-        entry_manager.add_entry(Entry(title))
-
-    print(f'Total entries loaded: {entry_manager.count}')
-
-    event_loop = asyncio.get_event_loop()
-
-    entry_manager.fetch_sliced(event_loop, 50)
+    entry_manager.fetch_sliced(50)
 
     response = input(f'Do you want to dump results to folder \'{filename}\' (Y/N)? ').casefold()
     if response == 'y' or response == 'yes':
-        utils.dump(entry_manager.cant_reach,
-                   f'{filename}/cant_reach.txt', 'Results that were not checked due to connection refuse')
-        utils.dump(entry_manager.no_url,
-                   f'{filename}/no_url.txt', 'Results with no url in entry (invalid entry)')
-        utils.dump(entry_manager.has_rss,
-                   f'{filename}/has_rss.txt', 'Results with rss channels')
-        utils.dump(entry_manager.has_rss_in_text,
-                   f'{filename}/has_rss_in_text.txt', 'Results that probably have rss channels (found \'RSS\' in text)')
-        utils.dump(entry_manager.no_rss,
-                   f'{filename}/no_rss.txt', 'Results with no rss channels found')
+        entry_manager.dump(filename)
 
 
 def show_menu():
+    options = {
+        'fetch': ['1', 'fetch'],
+        'quit': ['0', 'stop', 'exit', 'quit', 'q'],
+    }
+
     print(f'Welcome to {utils.project_title} {utils.version}')
     print('Choose an option to continue:')
     print('1 or \'fetch\' :: Fetch rss by url list')
@@ -45,10 +31,9 @@ def show_menu():
     while True:
         response = input('> ').casefold()
 
-        if response == '1' or response == 'fetch':
+        if response in options['fetch']:
             menu_option_fetch()
-
-        elif response == '0' or response == 'stop' or response == 'exit' or response == 'quit' or response == 'q':
+        elif response in options['quit']:
             break
         print('\nEnter new option, please: ')
     print(f'Thank you for using {utils.project_title}! Good bye!')

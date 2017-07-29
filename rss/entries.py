@@ -3,6 +3,7 @@ import asyncio
 import aiohttp
 
 from rss.rssutils import *
+from rss import utils
 
 
 class Entry:
@@ -83,6 +84,14 @@ class EntryManager():
             'cant_reach': [],
         }
         self.parsed_count = 0
+        self.event_loop = asyncio.get_event_loop()
+
+    def load_file(self, filename):
+        file = utils.load(filename)
+        if file:
+            for line in file:
+                self.add_entry(Entry(line))
+        print(f'Entries loaded from \'{filename}\': {len(file)}')
 
     def add_entry(self, entry):
         if isinstance(entry, Entry):
@@ -126,14 +135,12 @@ class EntryManager():
     async def parse(self, entry, session):
         if not entry.url:
             self.parsed_count += 1
-            # print(f'{parsed_count}. {entry.entry} :: Invalid format (no url specified)')
 
             if entry not in self.categories['no_url']:
                 self.categories['no_url'].append(entry)
             print(f'{self.parsed_count}. {entry.entry} :: Invalid entry format (no url specified)')
             return
 
-        # print(f'Started parsing of {entry.url}')
         await entry.parse(session)
         if entry.request_error:
             self.parsed_count += 1
@@ -166,23 +173,23 @@ class EntryManager():
             await asyncio.wait(tasks)
         print("Process took: {:.2f} seconds".format(time.time() - start))
 
-    def fetch_sliced(self, loop, step):
-        self.__fetch_sliced_impl(loop, self.entry_buffer, step)
+    def fetch_sliced(self, step):
+        self.__fetch_sliced_impl(self.event_loop, self.entry_buffer, step)
 
-        print(':::: Fetch statistics ::::')
+        print('\n:::: Fetch statistics ::::')
         print(f'Total entries count: {len(self.entry_buffer)}')
-        print(f'Entries with no RSS: {len(self.categories["no_rss"])}')
-        print(f'Entries with RSS: {len(self.categories["has_rss"])}')
-        print(f'Entries with RSS in text: {len(self.categories["has_rss_in_text"])}')
-        print(f'Entries with no url: {len(self.categories["no_url"])}')
-        print(f'Entries with url but not responding: {len(self.categories["cant_reach"])}')
+        print(f'Entries with no RSS: {len(self.no_rss)}')
+        print(f'Entries with RSS: {len(self.has_rss)}')
+        print(f'Entries with RSS in text: {len(self.has_rss_in_text)}')
+        print(f'Entries with no url: {len(self.no_url)}')
+        print(f'Entries with url but not responding: {len(self.cant_reach)}')
 
         while len(self.categories["cant_reach"]):
             print('\n:::: Notification :::: ')
             response = input(f'There are {len(self.categories["cant_reach"])} entries with no response. '
                              f'Do you want to check it again (Y/N)? ').casefold()
             if response == 'y' or response == 'yes':
-                self.__fetch_sliced_impl(loop, self.categories["cant_reach"], 20)
+                self.__fetch_sliced_impl(self.event_loop, self.categories["cant_reach"], 20)
             else:
                 break
 
@@ -196,8 +203,19 @@ class EntryManager():
         self.cleanup_categories()
         print("Total time elapsed: {:.2f} seconds".format(time.time() - start))
 
-
     def cleanup_categories(self):
         for key, value in self.categories.items():
             if isinstance(value, list):
                 self.categories[key] = list(set(value))
+
+    def dump(self, folder):
+        utils.dump(self.cant_reach,
+                   f'{folder}/cant_reach.txt', 'Results that were not checked due to connection refuse')
+        utils.dump(self.no_url,
+                   f'{folder}/no_url.txt', 'Results with no url in entry (invalid entry)')
+        utils.dump(self.has_rss,
+                   f'{folder}/has_rss.txt', 'Results with rss channels')
+        utils.dump(self.has_rss_in_text,
+                   f'{folder}/has_rss_in_text.txt', 'Results that probably have rss channels (found \'RSS\' in text)')
+        utils.dump(self.no_rss,
+                   f'{folder}/no_rss.txt', 'Results with no rss channels found')
