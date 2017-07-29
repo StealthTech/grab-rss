@@ -163,7 +163,27 @@ class EntryManager():
             await asyncio.wait(tasks)
         print("Process took: {:.2f} seconds".format(time.time() - start))
 
-    def fetch_sliced(self, loop, entries, step):
+    def fetch_sliced(self, loop, step):
+        self.__fetch_sliced_impl(loop, self.entry_buffer, step)
+
+        print(':::: Fetch statistics ::::')
+        print(f'Total entries count: {len(self.entry_buffer)}')
+        print(f'Entries with no RSS: {len(self.categories["no_rss"])}')
+        print(f'Entries with RSS: {len(self.categories["has_rss"])}')
+        print(f'Entries with RSS in text: {len(self.categories["has_rss_in_text"])}')
+        print(f'Entries with no url: {len(self.categories["no_url"])}')
+        print(f'Entries with url but not responding: {len(self.categories["cant_reach"])}')
+
+        while len(self.categories["cant_reach"]):
+            print('\n:::: Notification :::: ')
+            response = input(f'There are {len(self.categories["cant_reach"])} entries with no response. '
+                             f'Do you want to check it again (Y/N)? ').casefold()
+            if response == 'y' or response == 'yes':
+                self.__fetch_sliced_impl(loop, self.categories["cant_reach"], 20)
+            else:
+                break
+
+    def __fetch_sliced_impl(self, loop, entries, step):
         start = time.time()
         size = len(entries)
         for chunk in range(size // step + int(bool(size % step))):
@@ -173,9 +193,6 @@ class EntryManager():
         self.cleanup_categories()
         print("Total time elapsed: {:.2f} seconds".format(time.time() - start))
 
-
-    def __fetch_sliced_impl(self, loop, entries, step):
-        pass
 
     def cleanup_categories(self):
         for key, value in self.categories.items():

@@ -101,7 +101,7 @@ def menu_option_fetch():
 
     event_loop = asyncio.get_event_loop()
 
-    entry_manager.fetch_sliced(event_loop, entry_manager.entries, 50)
+    entry_manager.fetch_sliced(event_loop, 50)
 
     # parsed_count = 0
 
@@ -109,22 +109,22 @@ def menu_option_fetch():
     #     if isinstance(value, list):
     #         categories[key] = cleanup_doubles(value)
 
-    print(':::: Fetch statistics ::::')
-    print(f'Total entries count: {entry_manager.count}')
-    print(f'Entries with no RSS: {len(entry_manager.no_rss)}')
-    print(f'Entries with RSS: {len(entry_manager.has_rss)}')
-    print(f'Entries with RSS in text: {len(entry_manager.has_rss_in_text)}')
-    print(f'Entries with no url: {len(entry_manager.no_url)}')
-    print(f'Entries with url but not responding: {len(entry_manager.cant_reach)}')
-
-    while len(entry_manager.cant_reach):
-        print('\n:::: Notification :::: ')
-        response = input(f'There are {len(entry_manager.cant_reach)} entries with no response. '
-                         f'Do you want to check it again (Y/N)? ').casefold()
-        if response == 'y' or response == 'yes':
-            entry_manager.fetch_sliced(event_loop, entry_manager.cant_reach, 20)
-        else:
-            break
+    # print(':::: Fetch statistics ::::')
+    # print(f'Total entries count: {entry_manager.count}')
+    # print(f'Entries with no RSS: {len(entry_manager.no_rss)}')
+    # print(f'Entries with RSS: {len(entry_manager.has_rss)}')
+    # print(f'Entries with RSS in text: {len(entry_manager.has_rss_in_text)}')
+    # print(f'Entries with no url: {len(entry_manager.no_url)}')
+    # print(f'Entries with url but not responding: {len(entry_manager.cant_reach)}')
+    #
+    # while len(entry_manager.cant_reach):
+    #     print('\n:::: Notification :::: ')
+    #     response = input(f'There are {len(entry_manager.cant_reach)} entries with no response. '
+    #                      f'Do you want to check it again (Y/N)? ').casefold()
+    #     if response == 'y' or response == 'yes':
+    #         entry_manager.fetch_sliced(event_loop, entry_manager.cant_reach, 20)
+    #     else:
+    #         break
 
     response = input(f'Do you want to dump results to folder \'{filename}\' (Y/N)? ').casefold()
     if response == 'y' or response == 'yes':
