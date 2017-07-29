@@ -2,7 +2,7 @@ import time
 import asyncio
 import aiohttp
 
-from rss.rssutils import *
+from rss.analytics import *
 from rss import utils
 
 
