@@ -73,16 +73,18 @@ class Entry:
         self.rss = list(set(normalized))
 
 
-class EntryManager():
-    def __init__(self):
-        self.entry_buffer = []
-        self.categories = {
+class EntryManager:
+    __default_categories = {
             'no_rss': [],
             'has_rss': [],
             'has_rss_in_text': [],
             'no_url': [],
             'cant_reach': [],
         }
+
+    def __init__(self):
+        self.entry_buffer = []
+        self.categories = EntryManager.__default_categories
         self.parsed_count = 0
         self.event_loop = asyncio.get_event_loop()
 
@@ -101,13 +103,18 @@ class EntryManager():
         if entry in self.entry_buffer:
             self.entry_buffer.remove(entry)
 
+    def cleanup(self):
+        self.entry_buffer = []
+        self.parsed_count = 0
+        self.categories = EntryManager.__default_categories
+
     @property
     def entries(self):
         return self.entry_buffer
 
     @property
     def count(self, category=None):
-        if category in self.categories:
+        if category is not None and category in self.categories:
             if isinstance(self.categories[category], list):
                 return len(self.categories[category])
         return len(self.entry_buffer)
@@ -186,7 +193,7 @@ class EntryManager():
 
         while len(self.categories["cant_reach"]):
             print('\n:::: Notification :::: ')
-            response = input(f'There are {len(self.categories["cant_reach"])} entries with no response. '
+            response = input(f'There are {len(self.categories["cant_reach"])} entries not responding. '
                              f'Do you want to check it again (Y/N)? ').casefold()
             if response == 'y' or response == 'yes':
                 self.__fetch_sliced_impl(self.event_loop, self.categories["cant_reach"], 20)
