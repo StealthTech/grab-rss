@@ -12,7 +12,7 @@ def search_rss_meta(html):
     rss_links = []
     for rss_link in meta:
         if rss_link.has_attr('href'):
-            rss_links.append(str(rss_link['href']))
+            rss_links.append(slash_trim(str(rss_link['href'])))
 
     return rss_links
 
@@ -29,7 +29,7 @@ def search_rss_links(html):
             href_match = re.search(rss_word_pattern, href)
             text_match = re.search(rss_word_pattern, text)
             if href_match or text_match:
-                rss_links.append(href)
+                rss_links.append(slash_trim(href))
     return rss_links
 
 
@@ -79,18 +79,30 @@ async def get_content(url, session):
 
 
 async def traverse_common_links(url, session):
+    if not url.endswith('/'):
+        url += '/'
+
     links = [
         'rss',
         'rss.xml',
         'feed'
     ]
 
-    if not url.endswith('/'):
-        url += '/'
-
     pages_found = []
     for link in links:
         html, error = await get_content(url + link, session)
         if not error:
-            pages_found.append(url + link)
+            pages_found.append(slash_trim(url + link))
+
     return pages_found
+
+
+def slash_trim(string):
+    # TODO: Normalize href format
+    result = string
+    if result.endswith('/'):
+        print('trimmed: ' + string)
+        result = result[:-1]
+    return result
+
+
