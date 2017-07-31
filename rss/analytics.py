@@ -2,7 +2,7 @@ import re
 from bs4 import BeautifulSoup
 
 rss_word_pattern = '([^a-z]|^)rss([^a-z]|$)'
-__request_get_timeout = 5  # Request timeout in seconds
+__request_get_timeout = 20  # Request timeout in seconds
 
 
 def search_rss_meta(html):
@@ -12,7 +12,7 @@ def search_rss_meta(html):
     rss_links = []
     for rss_link in meta:
         if rss_link.has_attr('href'):
-            rss_links.append(slash_trim(str(rss_link['href'])))
+            rss_links.append(normalize_link(str(rss_link['href'])))
 
     return rss_links
 
@@ -29,7 +29,7 @@ def search_rss_links(html):
             href_match = re.search(rss_word_pattern, href)
             text_match = re.search(rss_word_pattern, text)
             if href_match or text_match:
-                rss_links.append(slash_trim(href))
+                rss_links.append(normalize_link(href))
     return rss_links
 
 
@@ -53,14 +53,9 @@ async def get_content(url, session):
     error = None
     r = ''
     try:
-        # r = requests.get(url, timeout=__request_get_timeout)
-
-        r = await session.get(url, timeout=20)
-
-        # aiohttp.request('GET', url)
+        r = await session.get(url, timeout=__request_get_timeout)
         if r.status != 200:
             error = r.status
-        # print('>' * 10, url, r.status, error)
 
     except Exception as e:
         # print(f'ex :: get_content :: {url} :: {e}')
@@ -70,39 +65,56 @@ async def get_content(url, session):
         try:
             result = await r.text()
         except UnicodeError:
-            return 'Invalid unicode', None
+            return 'Invalid unicode', None, url
         else:
-            return result, None
-        # return await r.text(), None
+            return result, None, str(r.url)
     else:
-        return None, error
+        return None, error, url
 
 
 async def traverse_common_links(url, session):
     if not url.endswith('/'):
         url += '/'
 
-    links = [
+    link_patterns = [
         'rss',
         'rss.xml',
         'feed'
     ]
 
-    pages_found = []
-    for link in links:
-        html, error = await get_content(url + link, session)
+    rss = {}
+    for pattern in link_patterns:
+        html, error, new_url = await get_content(url + pattern, session)
         if not error:
-            pages_found.append(slash_trim(url + link))
+            rss[normalize_link(new_url)] = html.strip()
 
-    return pages_found
+    rss = remove_similar_by_content(rss)
 
+    result = [key for key in rss.keys()]
 
-def slash_trim(string):
-    # TODO: Normalize href format
-    result = string
-    if result.endswith('/'):
-        print('trimmed: ' + string)
-        result = result[:-1]
     return result
 
+
+def normalize_link(string):
+    # TODO: Normalize href format, optimization
+    result = string
+
+    if result.startswith('//'):
+        result = result[2:]
+    if not result.startswith('http'):
+        result = 'http://' + result
+    if result.endswith('/'):
+        result = result[:-1]
+
+    return result
+
+
+def remove_similar_by_content(entry_dictionary):
+    result = {}
+    for key, value in entry_dictionary.items():
+        if value not in result.values():
+            result[key] = value
+        else:
+            print(f'removed: {key}')
+    return result
 

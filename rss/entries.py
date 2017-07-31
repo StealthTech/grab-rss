@@ -32,7 +32,8 @@ class Entry:
         self.rss_in_text = False
 
     async def parse(self, session):
-        html, error = await get_content(self.url, session)
+        html, error, new_url = await get_content(self.url, session)
+        self.url = new_url
         # print(error)
         if error:
             self.request_error = True
@@ -50,7 +51,7 @@ class Entry:
         for handler in Entry.rss_finders:
             result = handler(html)
             if result:
-                self.rss = result
+                self.rss.extend(result)
                 break
 
         self.rss.extend(await traverse_common_links(self.url, session))
