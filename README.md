@@ -1,6 +1,4 @@
-<div align="center">
-    <img src="promo/rss360.png" width="350" height="350">
-</div>
+![RSS 360 Logo](assets/logo.png)
 
 # RSS 360
 #### RSS Radar that you were looking for.
