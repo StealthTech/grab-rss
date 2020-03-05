@@ -1,7 +1,9 @@
-![RSS 360 Logo](assets/logo.png)
+<div align="center">
+    <img src="assets/logo.png" width="350" height="350">
+</div>
 
 # RSS 360
-#### RSS Radar that you were looking for.
+#### RSS Radar is a simple RSS processing tool.
 
 ### Introduction
 **RSS 360** is simple and mighty tool that allows you to scan
@@ -17,14 +19,12 @@ All actions must be performed in the project directory.
 
         pip3 install virtualenv
 
-        virtualenv env --python=python3.6
+        virtualenv env --python=python3
 
         source env/bin/activate/
 
 2. Installing requirements
 
         pip install -r requirements.txt
-
-        python core.py
 
  And you're good to go.
